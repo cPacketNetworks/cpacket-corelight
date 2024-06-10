@@ -1,0 +1,457 @@
+#!/usr/bin/env bash
+set -e
+set -o pipefail
+if [[ -n "$DEBUG" ]]; then
+  set -x
+fi
+
+version_command() {
+  echo "$version"
+}
+
+ccloud_azure_gwlb_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "ccloud-azure-gwlb - Chain a Gateway Load Balancer to Public Load Balancer frontend IP configurations\n"
+    echo
+
+  else
+    printf "ccloud-azure-gwlb - Chain a Gateway Load Balancer to Public Load Balancer frontend IP configurations\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  ccloud-azure-gwlb [OPTIONS] COMMAND\n"
+  printf "  ccloud-azure-gwlb [COMMAND] --help | -h\n"
+  printf "  ccloud-azure-gwlb --version | -v\n"
+  echo
+
+  printf "%s\n" "Commands:"
+  printf "  %s   Chain a Gateway Load Balancer to Public Load Balancers\n" "chain  "
+  printf "  %s   Unchain a Gateway Load Balancer from Public Load Balancers\n" "unchain"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--tag, -t KEY=VALUE (required)"
+    printf "    tag \"key=value\" pair to filter the list of load balancers\n"
+    echo
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+    printf "  %s\n" "--version, -v"
+    printf "    Show version number\n"
+    echo
+
+    printf "%s\n" "Environment Variables:"
+
+    printf "  %s\n" "DEBUG"
+    printf "    trace execution mode\n"
+    echo
+
+  fi
+}
+
+ccloud_azure_gwlb_chain_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "ccloud-azure-gwlb chain - Chain a Gateway Load Balancer to Public Load Balancers\n"
+    echo
+
+  else
+    printf "ccloud-azure-gwlb chain - Chain a Gateway Load Balancer to Public Load Balancers\n"
+    echo
+
+  fi
+
+  printf "Alias: c\n"
+  echo
+
+  printf "%s\n" "Usage:"
+  printf "  ccloud-azure-gwlb chain [OPTIONS]\n"
+  printf "  ccloud-azure-gwlb chain --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--gwlb, -g NAME"
+    printf "    name of the Gateway Load Balancer\n"
+    echo
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  ccloud-azure-gwlb --tag class=production chain --gwlb tolerant-pug\n"
+    echo
+
+  fi
+}
+
+ccloud_azure_gwlb_unchain_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "ccloud-azure-gwlb unchain - Unchain a Gateway Load Balancer from Public Load Balancers\n"
+    echo
+
+  else
+    printf "ccloud-azure-gwlb unchain - Unchain a Gateway Load Balancer from Public Load Balancers\n"
+    echo
+
+  fi
+
+  printf "Alias: u\n"
+  echo
+
+  printf "%s\n" "Usage:"
+  printf "  ccloud-azure-gwlb unchain\n"
+  printf "  ccloud-azure-gwlb unchain --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  ccloud-azure-gwlb unchain --gwlb tolerant-pug --tag class=production\n"
+    echo
+
+  fi
+}
+
+normalize_input() {
+  local arg flags passthru
+  passthru=false
+
+  while [[ $# -gt 0 ]]; do
+    arg="$1"
+    if [[ $passthru == true ]]; then
+      input+=("$arg")
+    elif [[ $arg =~ ^(--[a-zA-Z0-9_\-]+)=(.+)$ ]]; then
+      input+=("${BASH_REMATCH[1]}")
+      input+=("${BASH_REMATCH[2]}")
+    elif [[ $arg =~ ^(-[a-zA-Z0-9])=(.+)$ ]]; then
+      input+=("${BASH_REMATCH[1]}")
+      input+=("${BASH_REMATCH[2]}")
+    elif [[ $arg =~ ^-([a-zA-Z0-9][a-zA-Z0-9]+)$ ]]; then
+      flags="${BASH_REMATCH[1]}"
+      for ((i = 0; i < ${#flags}; i++)); do
+        input+=("-${flags:i:1}")
+      done
+    elif [[ "$arg" == "--" ]]; then
+      passthru=true
+      input+=("$arg")
+    else
+      input+=("$arg")
+    fi
+
+    shift
+  done
+}
+
+chain() {
+  local resource_group="$1"
+  local load_balancer_name="$2"
+  local frontend_name="$3"
+  local gwlb_frontend_id="$4"
+
+  az network lb frontend-ip update \
+    --no-wait \
+    --resource-group "$resource_group" \
+    --name "$frontend_name" \
+    --lb-name "$load_balancer_name" \
+    --gateway-lb "$gwlb_frontend_id"
+}
+
+# Find the load balancer frontends for all load balancers with a specific tag
+# Include only LBs that have
+# - a specific tag
+# - have public IP addresses or public IP address prefixes
+lb_frontends() {
+  local tag_key="$1"
+  local tag_value="$2"
+
+  az network lb list | jq -r '[ .[] | select(.tags."'"$tag_key"'" == "'"$tag_value"'") | select(.frontendIPConfigurations != null) | select(.frontendIPConfigurations[].publicIPAddress != null or .frontendIPConfigurations[].publicIPPrefix != null) | {resourceGroup: .resourceGroup, name: .name, fe: [.frontendIPConfigurations[].name]} | .fe[] as $fe | {$fe: {name: .name, rg: .resourceGroup} } ] | reduce .[] as $o ({}; . * $o) | to_entries | .[] | [.key,.value.name,.value.rg] | @tsv'
+}
+
+# Find the ID of the GWLB frontend configuration that will ingest the traffic to be inspected.
+# Can this be obtained from the browser console?
+gwlb() {
+  local load_balancer="$1"
+
+  # Note: this GWLB must have a frontend IP configuration, and it's assumed that the first one is the one we are interested in.
+  fe_obj="$(az network lb list | jq -r '.[] | select(.name == "'"$load_balancer"'") | { name: .frontendIPConfigurations[0].name, rg: .resourceGroup }')"
+  fe="$(echo "$fe_obj" | jq -r '.name')"
+  rg="$(echo "$fe_obj" | jq -r '.rg')"
+
+  az network lb frontend-ip show \
+    --resource-group "$rg" \
+    --lb-name "$load_balancer" \
+    --name "$fe" \
+    --query id \
+    --output tsv
+}
+
+unchain() {
+  local resource_group="$1"
+  local load_balancer_name="$2"
+  local frontend_name="$3"
+
+  az network lb frontend-ip update \
+    --no-wait \
+    --resource-group "$resource_group" \
+    --lb-name "$load_balancer_name" \
+    --name "$frontend_name" \
+    --remove "gateway_load_balancer"
+}
+
+ccloud_azure_gwlb_chain_command() {
+  # shellcheck disable=SC2154
+  tag="${args['--tag']}"
+  tag_key="${tag%=*}"
+  tag_value="${tag#*=}"
+
+  # Find the ID of the GWLB frontend configuration that will ingest the traffic to be inspected
+  # Could not figure out how to get this from the browser console.
+  # shellcheck disable=SC2154
+  gwlb_frontend_ip_conf_id=$(gwlb "${args["--gwlb"]}")
+
+  while IFS=$'\t' read -r frontend_name lb_name resource_group; do
+    chain "$resource_group" "$lb_name" "$frontend_name" "$gwlb_frontend_ip_conf_id"
+  done < <(lb_frontends "$tag_key" "$tag_value")
+
+}
+
+ccloud_azure_gwlb_unchain_command() {
+  # shellcheck disable=SC2154
+  tag="${args['--tag']}"
+  tag_key="${tag%=*}"
+  tag_value="${tag#*=}"
+
+  while IFS=$'\t' read -r frontend_name lb_name resource_group; do
+    unchain "$resource_group" "$lb_name" "$frontend_name"
+  done < <(lb_frontends "$tag_key" "$tag_value")
+
+}
+
+parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --version | -v)
+        version_command
+        exit
+        ;;
+
+      --help | -h)
+        long_usage=yes
+        ccloud_azure_gwlb_usage
+        exit
+        ;;
+
+      --tag | -t)
+
+        if [[ -n ${2+x} ]]; then
+          args['--tag']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--tag requires an argument: --tag, -t KEY=VALUE" >&2
+          exit 1
+        fi
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  env_var_names+=("DEBUG")
+
+  if command -v az >/dev/null 2>&1; then
+    deps['az']="$(command -v az | head -n1)"
+  else
+    printf "missing dependency: az\n" >&2
+    exit 1
+  fi
+
+  action=${1:-}
+
+  case $action in
+    -*) ;;
+
+    chain | c)
+      action="chain"
+      shift
+      ccloud_azure_gwlb_chain_parse_requirements "$@"
+      shift $#
+      ;;
+
+    unchain | u)
+      action="unchain"
+      shift
+      ccloud_azure_gwlb_unchain_parse_requirements "$@"
+      shift $#
+      ;;
+
+    "")
+      ccloud_azure_gwlb_usage >&2
+      exit 1
+      ;;
+
+    *)
+      printf "invalid command: %s\n" "$action" >&2
+      exit 1
+      ;;
+
+  esac
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+  if [[ -z ${args['--tag']+x} ]]; then
+    printf "missing required flag: --tag, -t KEY=VALUE\n" >&2
+    exit 1
+  fi
+
+}
+
+ccloud_azure_gwlb_chain_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        ccloud_azure_gwlb_chain_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="chain"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      --gwlb | -g)
+
+        if [[ -n ${2+x} ]]; then
+          args['--gwlb']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--gwlb requires an argument: --gwlb, -g NAME" >&2
+          exit 1
+        fi
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+}
+
+ccloud_azure_gwlb_unchain_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        ccloud_azure_gwlb_unchain_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="unchain"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+}
+
+initialize() {
+  version="0.1.0"
+  long_usage=''
+  set -e
+
+}
+
+run() {
+  declare -A args=()
+  declare -A deps=()
+  declare -a other_args=()
+  declare -a env_var_names=()
+  declare -a input=()
+  normalize_input "$@"
+  parse_requirements "${input[@]}"
+
+  case "$action" in
+    "chain") ccloud_azure_gwlb_chain_command ;;
+    "unchain") ccloud_azure_gwlb_unchain_command ;;
+  esac
+}
+
+initialize
+run "$@"

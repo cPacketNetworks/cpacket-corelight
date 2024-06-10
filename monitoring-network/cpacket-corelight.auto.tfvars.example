@@ -1,0 +1,19 @@
+cvu_image_id       = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/cvu-v-22.3.421"
+corelight_image_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/cvu-v-22.3.421"
+
+corelight_license_key = "ABCD"
+
+tags = {
+  owner = "someone@example.com"
+}
+
+resource_group = {
+  location = "westus2"
+  name     = "cpacket-corelight"
+}
+
+cvu_scaling = {
+  min_count     = 1
+  max_count     = 5
+  default_count = 2
+}
