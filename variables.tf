@@ -106,8 +106,8 @@ variable "corelight_image_id" {
   type        = string
 }
 
-variable "corelight_license_key" {
-  description = "Corelight license key"
+variable "corelight_license_key_path" {
+  description = "Corelight license key file path"
   type        = string
 }
 
