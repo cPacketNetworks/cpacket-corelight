@@ -19,3 +19,4 @@ resource "azurerm_subnet" "management" {
   virtual_network_name = azurerm_virtual_network.capture.name
   address_prefixes     = [var.management_subnet.cidr]
 }
+

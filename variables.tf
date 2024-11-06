@@ -1,3 +1,13 @@
+variable "subscription_id" {
+  description = "Azure subscription ID"
+  type        = string
+}
+
+variable "tenant_id" {
+  description = "Azure tenant ID"
+  type        = string
+}
+
 variable "tags" {
   description = "Map of default tags to apply to cPacket resources"
   type        = map(string)
@@ -115,4 +125,21 @@ variable "ssh_public_key_file" {
   description = "Path to the SSH public key file"
   type        = string
   default     = "~/.ssh/id_rsa.pub"
+}
+
+variable "cclear_public_ip" {
+  description = "cClear public IP address"
+  type        = bool
+  default     = false
+}
+
+variable "cclear_cloud_init_data" {
+  description = "cClear cloud-init data"
+  type        = string
+  default     = null
+}
+
+variable "cclear_image_id" {
+  description = "cClear image ID"
+  type        = string
 }

@@ -1,7 +1,11 @@
-output "nva_security_group_id" {
-  value = azurerm_network_security_group.nva.id
+output "cvu" {
+  value = azurerm_network_security_group.cvu.id
 }
 
-output "corelight_security_group_id" {
+output "corelight" {
   value = azurerm_network_security_group.corelight.id
+}
+
+output "cclear" {
+  value = azurerm_network_security_group.cclear.id
 }

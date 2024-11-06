@@ -32,7 +32,7 @@ module "cvu" {
   }
 
   public_key            = file(var.ssh_public_key_file)
-  nva_security_group_id = module.security_groups.nva_security_group_id
+  nva_security_group_id = module.security_groups.cvu
   capture_subnet_id     = module.network.capture_subnet.id
 
   cvu_image_id = var.cvu_image_id
@@ -41,8 +41,9 @@ module "cvu" {
   // TODO @thathaneydude: Expose the LB frontend IP in the terraform-azure-sensor module
   downstream_tool = data.azurerm_lb.corelight.frontend_ip_configuration[0].private_ip_address
   gwlb            = var.gwlb
-}
 
+  depends_on = [module.cclear]
+}
 
 module "sensor" {
   source                         = "github.com/corelight/terraform-azure-sensor"
@@ -58,85 +59,6 @@ module "sensor" {
   tags                           = var.tags
 }
 
-resource "azurerm_network_security_group" "ubuntu" {
-  name                = "ubuntu"
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
-
-  security_rule {
-    name                       = "SSH"
-    priority                   = 102
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  tags = var.tags
-}
-
-resource "azurerm_public_ip" "ubuntu" {
-  name                = "ubuntu"
-  location            = azurerm_resource_group.capture.location
-  resource_group_name = azurerm_resource_group.capture.name
-  allocation_method   = "Dynamic"
-  tags                = var.tags
-}
-
-resource "azurerm_network_interface" "admin" {
-  name                = "admin"
-  location            = azurerm_resource_group.capture.location
-  resource_group_name = azurerm_resource_group.capture.name
-
-  # Deprecated
-  # enable_accelerated_networking = true
-  accelerated_networking_enabled = true
-  ip_configuration {
-    name                          = "ubuntu-primary"
-    primary                       = true
-    subnet_id                     = module.network.management_subnet.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.ubuntu.id
-  }
-  tags = merge(var.tags, {
-    Name = "ubuntu"
-  })
-}
-
-resource "azurerm_linux_virtual_machine" "admin" {
-  name                  = "admin"
-  location              = azurerm_resource_group.capture.location
-  resource_group_name   = azurerm_resource_group.capture.name
-  network_interface_ids = [azurerm_network_interface.admin.id]
-  admin_username        = "ubuntu"
-  size                  = "Standard_D4s_v3"
-  computer_name         = "admin"
-
-  admin_ssh_key {
-    username   = "ubuntu"
-    public_key = azurerm_ssh_public_key.cpacket.public_key
-  }
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Premium_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
-  }
-
-  tags = merge(var.tags, {
-    Name = "admin"
-  })
-}
-
 data "azurerm_lb" "corelight" {
   name                = module.sensor.internal_load_balancer_name
   resource_group_name = azurerm_resource_group.capture.name
@@ -147,4 +69,47 @@ resource "azurerm_ssh_public_key" "cpacket" {
   resource_group_name = azurerm_resource_group.capture.name
   location            = azurerm_resource_group.capture.location
   public_key          = file(var.ssh_public_key_file)
+}
+
+module "cclear" {
+  source = "./modules/cclear" # Relative path to the cclear module.
+
+  # Required Variables
+  resource_group_name      = azurerm_resource_group.capture.name
+  vnet_resource_group_name = module.network.capture_virtual_network.resource_group.name
+  vnet_name                = module.network.capture_virtual_network.name
+
+  # subnet                   = module.network.management_subnet.name
+
+  subnet         = "management"
+  image_id       = var.cclear_image_id
+  ssh_public_key = var.ssh_public_key_file
+  public_ip      = var.cclear_public_ip
+
+  # Optional Variables with default values.  Default values are shown.
+  tags = var.tags
+
+  # ipv4_address = null
+  size = "Standard_D4s_v5"
+
+  # storage_type_os   = "Standard_LRS"
+  # storage_type_data = "Premium_LRS"
+
+  data_size = 500 # Specifies the size of the data disk in GB.
+
+  # admin_username    = "ubuntu" # The admin username of the cClear-V that will be deployed.
+  # zones             = true     # Place the cClear-V instance in an Availability Zone.
+  # resource_names = {           # The names of the resources to be created.
+  #   machine        = "cclear"
+  #   management_nic = "cclear-management"
+  #   data_disk      = "cclear-data"
+  #   os_disk        = "cclear-OS"
+  # }
+
+  cloud_init_data = var.cclear_cloud_init_data # The cloud-init data to be used for the cClear-V instance.
+
+  security_group_id = module.security_groups.cclear
+
+  # why do we need to specify this when there's an implicit reference to the resource group above?
+  depends_on = [azurerm_resource_group.capture]
 }
