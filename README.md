@@ -6,7 +6,7 @@
 
 This module deploys a cPacket and Corelight monitoring network in Azure.
 
-![Monitoring network](/assets/images/Azure-monitoring-network.drawio)
+![Monitoring network](/assets/images/cpacket-corelight.png)
 
 ## Usage
 
