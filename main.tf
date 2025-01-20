@@ -46,17 +46,16 @@ module "cvu" {
 }
 
 module "sensor" {
-  source                         = "github.com/corelight/terraform-azure-sensor"
-  license_key                    = file(var.corelight_license_key_path)
-  location                       = azurerm_resource_group.capture.location
-  resource_group_name            = azurerm_resource_group.capture.name
-  virtual_network_name           = module.network.capture_virtual_network.name
-  virtual_network_resource_group = azurerm_resource_group.capture.name
-  virtual_network_address_space  = module.network.capture_virtual_network.address_space
-  corelight_sensor_image_id      = var.corelight_image_id
-  community_string               = "/some/api/endpoint"
-  sensor_ssh_public_key          = azurerm_ssh_public_key.cpacket.public_key
-  tags                           = var.tags
+  source                    = "github.com/corelight/terraform-azure-sensor"
+  license_key               = file(var.corelight_license_key_path)
+  location                  = azurerm_resource_group.capture.location
+  resource_group_name       = azurerm_resource_group.capture.name
+  monitoring_subnet_id      = module.network.capture_subnet.id
+  management_subnet_id      = module.network.management_subnet.id
+  corelight_sensor_image_id = var.corelight_image_id
+  community_string          = "/some/api/endpoint"
+  sensor_ssh_public_key     = azurerm_ssh_public_key.cpacket.public_key
+  tags                      = var.tags
 }
 
 data "azurerm_lb" "corelight" {
