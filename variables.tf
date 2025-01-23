@@ -121,6 +121,11 @@ variable "corelight_license_key_path" {
   type        = string
 }
 
+variable "corelight_sensor_community_string" {
+  description = "Corelight sensor password"
+  type        = string
+}
+
 variable "ssh_public_key_file" {
   description = "Path to the SSH public key file"
   type        = string

@@ -59,7 +59,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cvu" {
   computer_name_prefix = "cvu"
   overprovision        = false
   admin_username       = "ubuntu"
-
+  instances = 1
   source_image_id = var.cvu_image_id
 
   custom_data = base64encode(templatefile("${path.module}/scripts/cvu-cloud-init.tpl", {

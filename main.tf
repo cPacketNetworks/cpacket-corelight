@@ -35,32 +35,27 @@ module "cvu" {
   nva_security_group_id = module.security_groups.cvu
   capture_subnet_id     = module.network.capture_subnet.id
 
-  cvu_image_id = var.cvu_image_id
-  cvu_scaleset = var.cvu_scaleset
-  cvu_scaling  = var.cvu_scaling
-  // TODO @thathaneydude: Expose the LB frontend IP in the terraform-azure-sensor module
-  downstream_tool = data.azurerm_lb.corelight.frontend_ip_configuration[0].private_ip_address
+  cvu_image_id    = var.cvu_image_id
+  cvu_scaleset    = var.cvu_scaleset
+  cvu_scaling     = var.cvu_scaling
+  downstream_tool = module.sensor.sensor_load_balancer_frontend_ip_address
   gwlb            = var.gwlb
 
   depends_on = [module.cclear]
 }
 
 module "sensor" {
-  source                    = "github.com/corelight/terraform-azure-sensor"
+  source = "github.com/corelight/terraform-azure-sensor"
+
   license_key               = file(var.corelight_license_key_path)
   location                  = azurerm_resource_group.capture.location
   resource_group_name       = azurerm_resource_group.capture.name
   monitoring_subnet_id      = module.network.capture_subnet.id
   management_subnet_id      = module.network.management_subnet.id
   corelight_sensor_image_id = var.corelight_image_id
-  community_string          = "/some/api/endpoint"
+  community_string          = var.corelight_sensor_community_string
   sensor_ssh_public_key     = azurerm_ssh_public_key.cpacket.public_key
   tags                      = var.tags
-}
-
-data "azurerm_lb" "corelight" {
-  name                = module.sensor.internal_load_balancer_name
-  resource_group_name = azurerm_resource_group.capture.name
 }
 
 resource "azurerm_ssh_public_key" "cpacket" {
@@ -77,13 +72,10 @@ module "cclear" {
   resource_group_name      = azurerm_resource_group.capture.name
   vnet_resource_group_name = module.network.capture_virtual_network.resource_group.name
   vnet_name                = module.network.capture_virtual_network.name
-
-  # subnet                   = module.network.management_subnet.name
-
-  subnet         = "management"
-  image_id       = var.cclear_image_id
-  ssh_public_key = var.ssh_public_key_file
-  public_ip      = var.cclear_public_ip
+  subnet                   = module.network.management_subnet.name
+  image_id                 = var.cclear_image_id
+  ssh_public_key           = var.ssh_public_key_file
+  public_ip                = var.cclear_public_ip
 
   # Optional Variables with default values.  Default values are shown.
   tags = var.tags
