@@ -148,3 +148,9 @@ variable "cclear_image_id" {
   description = "cClear image ID"
   type        = string
 }
+
+variable "auto_licensing" {
+  description = "Auto licensing for cClear"
+  type        = bool
+  default     = true
+}

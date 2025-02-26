@@ -1,102 +1,44 @@
 #cloud-config
-
+#
+# # SSH password authentication is disabled by default for security reasons.
+# # Enabling SSH password authentication is not recommended as it can expose your system to brute-force attacks.
+#
+# # If you still want to enable password authentication for SSH, you can do so by uncommenting the following lines and updating them as needed:
+# ssh_pwauth: true
+#
+# # To set a password for a user, uncomment and update the following section:
 # chpasswd:
-#   expire: false
+#   expire: false  # This ensures the password does not expire.
 #   users:
 #   - {name: ubuntu, password: "something-secure", type: text}  # Replace "something-secure" with a strong password.
 #   # Alternatively, you can use a hashed password:
 #   # - {name: ubuntu, password: "<hash of user password>"}  # Generate a hash using: $ openssl passwd "something-secure"
 
 write_files:
-- path: /opt/bin/deploy-time-setup.sh
-  permissions: '0755'
+- path: /etc/cclear/cirrus/cclear.lic
+  permissions: '0644'
   content: |
-    #!/bin/bash
-    set -ex
-
-    wait_for_cclear() {
-      local timeout
-      local start_time
-      local current_time
-      local elapsed_time
-      local status
-
-      timeout=600 # 10 minutes
-
-      start_time=$(date +%s)
-
-      # Wait for cClear to be available, poll the healthcheck endpoint to verify cClear is up and running.
-      while true; do
-        set +e
-        status=$(curl -s -k -o /dev/null -w "%%{http_code}" --request GET --url https://localhost/api/info/v1)
-        set -e
-        echo "cClear status: $status"
-        if [ "$status" -eq 200 ]; then
-          echo "cClear is up and running!"
-          break
-        fi
-
-        current_time=$(date +%s)
-        elapsed_time=$((current_time - start_time))
-        if [ "$elapsed_time" -ge $timeout ]; then
-          echo "Timeout reached. cClear is not up and running."
-          exit 1
-        fi
-
-        sleep 15
-      done
+    ${cclear_license}
+- path: /etc/cclear/cirrus/db.json
+  permissions: '0644'
+  content: |
+    {
+      "autoscaling_clusters": {
+        "bcc3052a4d8bd95a04603e5a2": {
+          "cloud_service_provider": "azure",
+          "cpacket_device_type": "cvu",
+          "autoscaling_cluster": {
+            "vmss": "${vmss_name}",
+            "resource_group": "${resource_group}",
+            "subscription_id": "${subscription_id}"
+          }
+        }
+      }
     }
-
-    while true; do
-      if [ -d /media/data/cpacket ]; then
-        break
-      fi
-      sleep 1
-    done
-
-    cclear_license="${cclear_license}"
-    web_password="${web_password}"
-
-    echo "${inclusions}" >/media/data/cpacket/networks-to-scan
-    echo "${cvu_lb_ip}" >/media/data/cpacket/networks-to-exclude
-    echo "$web_password" >/media/data/cpacket/http-basic-auth
-
-    if [ -n "${cstor_lb_ip}" ]; then
-      echo "${cstor_lb_ip}" >>/media/data/cpacket/networks-to-exclude
-    fi
-
-    # Ensure cClear APIs are available before proceeding with key activation.
-    wait_for_cclear
-
-    # Try to license cClear using the provided license key.
-    if [[ -n "$cclear_license" && -n "$web_password" ]]; then
-      payload='{"key": "'"$cclear_license"'", "method": ["online", "offline"]}'
-      max_retries=5
-      retry_count=0
-
-      while [ $retry_count -lt $max_retries ]; do
-        set +e
-
-        curl --fail -s -k \
-          -u "cpacket:$web_password" \
-          -H "Content-Type: application/json" -d "$payload" https://localhost/api/licensing/v2/activation/key
-
-        if [ $? -eq 0 ]; then
-          break
-        fi
-
-        set -e
-
-        retry_count=$((retry_count + 1))
-        sleep 90
-      done
-
-      if [ $retry_count -eq $max_retries ]; then
-        echo "Key activation failed after $max_retries attempts."
-        exit 1
-      fi
-    fi
-
-    systemctl enable --now managed-device-registration.service
 runcmd:
-  - /opt/bin/deploy-time-setup.sh
+%{ if auto_licensing }
+  - systemctl enable --now auto-licensing.service
+%{ endif }
+%{ if managed_registration }
+  - systemctl enable --now managed-device-registration.service
+%{ endif }
