@@ -65,3 +65,4 @@ variable "cvu_scaling" {
     max_count     = number
   })
 }
+

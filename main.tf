@@ -67,7 +67,6 @@ resource "azurerm_ssh_public_key" "cpacket" {
 
 module "cclear" {
   source = "./modules/cclear" # Relative path to the cclear module.
-
   # Required Variables
   resource_group_name      = azurerm_resource_group.capture.name
   vnet_resource_group_name = module.network.capture_virtual_network.resource_group.name
@@ -76,31 +75,11 @@ module "cclear" {
   image_id                 = var.cclear_image_id
   ssh_public_key           = var.ssh_public_key_file
   public_ip                = var.cclear_public_ip
-
-  # Optional Variables with default values.  Default values are shown.
-  tags = var.tags
-
-  # ipv4_address = null
-  size = "Standard_D4s_v5"
-
-  # storage_type_os   = "Standard_LRS"
-  # storage_type_data = "Premium_LRS"
-
-  data_size = 500 # Specifies the size of the data disk in GB.
-
-  # admin_username    = "ubuntu" # The admin username of the cClear-V that will be deployed.
-  # zones             = true     # Place the cClear-V instance in an Availability Zone.
-  # resource_names = {           # The names of the resources to be created.
-  #   machine        = "cclear"
-  #   management_nic = "cclear-management"
-  #   data_disk      = "cclear-data"
-  #   os_disk        = "cclear-OS"
-  # }
-
-  cloud_init_data = var.cclear_cloud_init_data # The cloud-init data to be used for the cClear-V instance.
-
-  security_group_id = module.security_groups.cclear
-
+  size                     = "Standard_D4s_v5"
+  data_size                = 500                        # Specifies the size of the data disk in GB.
+  cloud_init_data          = var.cclear_cloud_init_data # The cloud-init data to be used for the cClear-V instance.
+  security_group_id        = module.security_groups.cclear
+  tags                     = var.tags
   # why do we need to specify this when there's an implicit reference to the resource group above?
   depends_on = [azurerm_resource_group.capture]
 }
