@@ -38,14 +38,15 @@ module "cvu" {
   cvu_image_id    = var.cvu_image_id
   cvu_scaleset    = var.cvu_scaleset
   cvu_scaling     = var.cvu_scaling
-  downstream_tool = module.sensor.sensor_load_balancer_frontend_ip_address
+  downstream_tool = module.sensor.sensor_load_balancer_monitoring_frontend_ip_address
   gwlb            = var.gwlb
 
   depends_on = [module.cclear]
 }
 
 module "sensor" {
-  source = "github.com/corelight/terraform-azure-sensor"
+  # source = "github.com/corelight/terraform-azure-sensor"
+  source = "../../terraform-azure-sensor"
 
   license_key               = file(var.corelight_license_key_path)
   location                  = azurerm_resource_group.capture.location
