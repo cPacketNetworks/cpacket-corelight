@@ -1,5 +1,5 @@
-# See variable descriptions in variables.tf for more information
-# The values here are the defaults specified in variables.tf, or sensible examples.
+# # See variable descriptions in variables.tf for more information
+# # The values here are the defaults specified in variables.tf, or sensible examples.
 
 # tenant_id = "72f988bf-86f1-41af-91ab-2d7cd011db47"
 # 
