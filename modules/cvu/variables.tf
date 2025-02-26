@@ -15,7 +15,6 @@ variable "resource_group" {
 variable "gwlb" {
   description = "Map of gateway load balancer properties"
   type = object({
-    private_ip_address  = string
     protocol            = string
     frontend_port       = string
     backend_port        = string

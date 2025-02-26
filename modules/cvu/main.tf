@@ -5,8 +5,7 @@ resource "azurerm_lb" "gwlb" {
   frontend_ip_configuration {
     name                          = "cpacket-capture"
     subnet_id                     = var.capture_subnet_id
-    private_ip_address            = var.gwlb.private_ip_address
-    private_ip_address_allocation = "Static"
+    private_ip_address_allocation = "Dynamic"
   }
   sku  = "Gateway"
   tags = var.tags
