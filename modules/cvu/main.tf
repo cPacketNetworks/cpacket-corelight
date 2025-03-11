@@ -4,7 +4,7 @@ resource "azurerm_lb" "gwlb" {
   resource_group_name = var.resource_group.name
   frontend_ip_configuration {
     name                          = "cpacket-capture"
-    subnet_id                     = var.capture_subnet_id
+    subnet_id                     = var.gwlb_subnet_id
     private_ip_address_allocation = "Dynamic"
   }
   sku  = "Gateway"

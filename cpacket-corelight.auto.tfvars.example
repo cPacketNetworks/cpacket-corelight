@@ -42,6 +42,11 @@
 #   cidr = "10.0.252.0/24"
 # }
 # 
+# gwlb_subnet = {
+#   name = "gwlb"
+#   cidr = "10.0.251.0/24"
+# }
+#
 # gwlb = {
 #   private_ip_address  = "10.0.253.5"
 #   protocol            = "All"
@@ -53,7 +58,10 @@
 #   number_of_probes    = 2
 # }
 # 
-# vnet_cidr = "10.0.0.0/16"
+# vnet = {
+#   cidr = "10.0.0.0/16"
+#   name = "cpacket-corelight"
+# }
 # 
 # cvu_scaleset = {
 #   sku          = "Standard_D4ls_v5"

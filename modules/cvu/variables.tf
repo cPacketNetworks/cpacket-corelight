@@ -29,6 +29,10 @@ variable "capture_subnet_id" {
   type = string
 }
 
+variable "gwlb_subnet_id" {
+  type = string
+}
+
 variable "nva_security_group_id" {
   type = string
 }

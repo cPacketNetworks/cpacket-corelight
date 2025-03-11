@@ -34,6 +34,18 @@ variable "capture_subnet" {
   }
 }
 
+variable "gwlb_subnet" {
+  description = "gwlb subnet properties"
+  type = object({
+    name = string
+    cidr = string
+  })
+  default = {
+    name = "gwlb"
+    cidr = "10.0.251.0/28"
+  }
+}
+
 variable "management_subnet" {
   description = "management subnet properties"
   type = object({
@@ -78,10 +90,16 @@ variable "cvu_image_id" {
   type        = string
 }
 
-variable "vnet_cidr" {
+variable "vnet" {
   description = "CIDR block for the virtual network"
-  type        = string
-  default     = "10.0.0.0/16"
+  type = object({
+    name = string
+    cidr = string
+  })
+  default = {
+    cidr = "10.0.0.0/16"
+    name = "cpacket-corelight"
+  }
 }
 
 variable "cvu_scaleset" {

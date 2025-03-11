@@ -6,9 +6,12 @@ variable "resource_group" {
   })
 }
 
-variable "vnet_cidr" {
-  description = "CIDR block for the virtual network"
-  type        = string
+variable "vnet" {
+  description = "virtual network properties"
+  type = object({
+    name = string
+    cidr = string
+  })
 }
 
 variable "capture_subnet" {
@@ -27,8 +30,17 @@ variable "management_subnet" {
   })
 }
 
+variable "gwlb_subnet" {
+  description = "GWLB subnet properties"
+  type = object({
+    name = string
+    cidr = string
+  })
+}
+
 variable "tags" {
   description = "Map of default tags to apply to cPacket resources"
   type        = map(string)
   default     = null
 }
+

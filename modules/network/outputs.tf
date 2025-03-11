@@ -24,3 +24,9 @@ output "management_subnet" {
   }
 }
 
+output "gwlb_subnet" {
+  value = {
+    id   = azurerm_subnet.gwlb.id
+    name = azurerm_subnet.gwlb.name
+  }
+}

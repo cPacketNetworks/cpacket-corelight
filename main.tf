@@ -8,11 +8,12 @@ module "network" {
   source            = "./modules/network"
   capture_subnet    = var.capture_subnet
   management_subnet = var.management_subnet
+  gwlb_subnet       = var.gwlb_subnet
   resource_group = {
     name     = azurerm_resource_group.capture.name
     location = azurerm_resource_group.capture.location
   }
-  vnet_cidr = var.vnet_cidr
+  vnet = var.vnet
 }
 
 module "security_groups" {
@@ -34,6 +35,7 @@ module "cvu" {
   public_key            = file(var.ssh_public_key_file)
   nva_security_group_id = module.security_groups.cvu
   capture_subnet_id     = module.network.capture_subnet.id
+  gwlb_subnet_id        = module.network.gwlb_subnet.id
 
   cvu_image_id    = var.cvu_image_id
   cvu_scaleset    = var.cvu_scaleset
