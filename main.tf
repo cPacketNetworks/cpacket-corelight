@@ -47,8 +47,7 @@ module "cvu" {
 }
 
 module "sensor" {
-  # source = "github.com/corelight/terraform-azure-sensor"
-  source = "../../terraform-azure-sensor"
+  source = "github.com/corelight/terraform-azure-sensor?ref=v0.3.0"
 
   license_key               = file(var.corelight_license_key_path)
   location                  = azurerm_resource_group.capture.location
