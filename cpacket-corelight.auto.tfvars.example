@@ -1,0 +1,75 @@
+# # See variable descriptions in variables.tf for more information
+# # The values here are the defaults specified in variables.tf, or sensible examples.
+
+# tenant_id = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+# 
+# subscription_id = "7fbc3a8b-268b-4fb9-b1c5-9c84433b378f"
+# 
+# cvu_image_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/cvu-v-22.3.421"
+# 
+# cclear_image_id = "/subscriptions/93004638-8c6b-4e33-ba58-946afd57efdf/resourceGroups/cloud-builds/providers/Microsoft.Compute/galleries/dev_builds/images/cclear-v/versions/24.2.680"
+# 
+# corelight_image_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/corelight-22.3.421"
+# 
+# corelight_license_key_path = "corelight-license.txt"
+# 
+# tags = {
+#   owner = "someone@example.com"
+# }
+# 
+# resource_group = {
+#   location = "westus2"
+#   name     = "cpacket-corelight"
+# }
+# 
+# cvu_scaling = {
+#   min_count     = 2
+#   max_count     = 5
+#   default_count = 2
+# }
+# 
+# corelight_sensor_community_string = "/"
+# 
+# cclear_public_ip = true
+# 
+# capture_subnet = {
+#   name = "capture"
+#   cidr = "10.0.253.0/24"
+# }
+# 
+# management_subnet = {
+#   name = "management"
+#   cidr = "10.0.252.0/24"
+# }
+# 
+# gwlb_subnet = {
+#   name = "gwlb"
+#   cidr = "10.0.251.0/24"
+# }
+#
+# gwlb = {
+#   private_ip_address  = "10.0.253.5"
+#   protocol            = "All"
+#   frontend_port       = "0"
+#   backend_port        = "0"
+#   probe_port          = 80
+#   probe_threshold     = 1
+#   interval_in_seconds = 15
+#   number_of_probes    = 2
+# }
+# 
+# vnet = {
+#   cidr = "10.0.0.0/16"
+#   name = "cpacket-corelight"
+# }
+# 
+# cvu_scaleset = {
+#   sku          = "Standard_D4ls_v5"
+#   storage_type = "Premium_LRS"
+# }
+# 
+# ssh_public_key_file = "~/.ssh/id_rsa.pub"
+# 
+# cclear_cloud_init_data = "./cloud-init/cclear.tpl"
+# 
+# auto_licensing = false
