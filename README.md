@@ -7,6 +7,7 @@
 This module deploys a cPacket and Corelight monitoring network in Azure.
 
 ![Monitoring network](/assets/images/cpacket-corelight.png)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FcPacketNetworks%2Fcpacket-corelight.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FcPacketNetworks%2Fcpacket-corelight?ref=badge_shield)
 
 A dedicated VNET is created that will contain the cPacket and Corelight VMs.
 There is a management subnet that will contain cClear, and the capture subnet that contains the cVu and Corelight VM Scale Sets.
@@ -51,3 +52,7 @@ Then run apply to create the resources.
 ```bash
 terraform apply
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FcPacketNetworks%2Fcpacket-corelight.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FcPacketNetworks%2Fcpacket-corelight?ref=badge_large)
