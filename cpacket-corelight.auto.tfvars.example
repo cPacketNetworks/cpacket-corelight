@@ -68,7 +68,7 @@
 #   storage_type = "Premium_LRS"
 # }
 # 
-# ssh_public_key_file = "~/.ssh/id_rsa.pub"
+# ssh_public_key_file = "~/.ssh/id_ed25519.pub"
 # 
 # cclear_cloud_init_data = "./cloud-init/cclear.tpl"
 # 

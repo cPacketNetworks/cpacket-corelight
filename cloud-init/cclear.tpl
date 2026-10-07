@@ -1,18 +1,4 @@
 #cloud-config
-#
-# # SSH password authentication is disabled by default for security reasons.
-# # Enabling SSH password authentication is not recommended as it can expose your system to brute-force attacks.
-#
-# # If you still want to enable password authentication for SSH, you can do so by uncommenting the following lines and updating them as needed:
-# ssh_pwauth: true
-#
-# # To set a password for a user, uncomment and update the following section:
-# chpasswd:
-#   expire: false  # This ensures the password does not expire.
-#   users:
-#   - {name: ubuntu, password: "something-secure", type: text}  # Replace "something-secure" with a strong password.
-#   # Alternatively, you can use a hashed password:
-#   # - {name: ubuntu, password: "<hash of user password>"}  # Generate a hash using: $ openssl passwd "something-secure"
 
 write_files:
 - path: /etc/cclear/cirrus/cclear.lic
