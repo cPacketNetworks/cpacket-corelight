@@ -47,7 +47,7 @@ module "cvu" {
 }
 
 module "sensor" {
-  source = "github.com/corelight/terraform-azure-sensor?ref=v0.3.0"
+  source = "github.com/corelight/terraform//modules/azure/sensor?ref=v29.0.5-9"
 
   license_key               = file(var.corelight_license_key_path)
   location                  = azurerm_resource_group.capture.location
@@ -58,6 +58,10 @@ module "sensor" {
   community_string          = var.corelight_sensor_community_string
   sensor_ssh_public_key     = azurerm_ssh_public_key.cpacket.public_key
   tags                      = var.tags
+  # Fleet is not used; these were the defaults in the original terraform-azure-sensor module.
+  fleet_token          = ""
+  fleet_url            = ""
+  fleet_server_sslname = "1.broala.fleet.product.corelight.io"
 }
 
 resource "azurerm_ssh_public_key" "cpacket" {
