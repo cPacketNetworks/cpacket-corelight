@@ -77,3 +77,7 @@
 # cclear_cloud_init_data = "./cloud-init/cclear.tpl"
 # 
 # auto_licensing = false
+# 
+# cclear_license = "<cClear license>"
+# 
+# cclear_managed_registration = true

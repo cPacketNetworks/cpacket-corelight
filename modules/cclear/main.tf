@@ -45,7 +45,8 @@ resource "azurerm_virtual_machine" "cclear" {
   os_profile {
     computer_name  = var.resource_names.machine
     admin_username = var.admin_username
-    custom_data    = var.cloud_init_data == null ? null : var.cloud_init_data
+    # The provider base64-encodes custom_data itself, so the rendered template is passed as plain text.
+    custom_data = var.cloud_init_data == null ? null : templatefile(var.cloud_init_data, var.cloud_init_data_vars)
   }
 
   os_profile_linux_config {
@@ -56,7 +57,23 @@ resource "azurerm_virtual_machine" "cclear" {
     }
   }
 
+  dynamic "identity" {
+    for_each = var.system_assigned_managed_identity ? [1] : []
+    content {
+      type = "SystemAssigned"
+    }
+  }
+
   tags = var.tags
+}
+
+# Managed device registration: cClear discovers the cVu-V scale set's instances through the Azure API,
+# which needs read access to the resource group they are in.
+resource "azurerm_role_assignment" "cclear_reader" {
+  count                = var.system_assigned_managed_identity ? 1 : 0
+  scope                = data.azurerm_resource_group.cclear.id
+  role_definition_name = "Reader"
+  principal_id         = azurerm_virtual_machine.cclear.identity[0].principal_id
 }
 
 resource "azurerm_network_interface" "cclear" {

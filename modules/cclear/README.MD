@@ -36,7 +36,9 @@ module "cclear" {
     data_disk      = "cclear-data"
     os_disk        = "cclear-OS"
   }
-  cloud_init_data                 = null                 # The cloud-init data will be used for the cClear-V.
+  cloud_init_data                 = null                 # The cloud-init template for the cClear-V.
+  cloud_init_data_vars            = {}                   # The values the cloud-init template is rendered with.
+  system_assigned_managed_identity = false               # Give cClear-V a managed identity with Reader on its resource group.
 
   # Depends On
   depends_on = [ <resource_group_name>, <vnet_resource_group_name>, <vnet_name> ]
@@ -107,7 +109,15 @@ resource_names: This is a map of resource names to be used for the resources to 
     os_disk        = "cclear-os"
   }
 
-cloud_init_data: This is the cloud-init data that will be passed to the cClear-V.
+cloud_init_data: This is the path of a cloud-init template for the cClear-V. It is rendered with templatefile() using cloud_init_data_vars.
   cloud_init_data = "scripts/cclear-cloud-init.tpl"
+
+cloud_init_data_vars: This is a map of the values the cloud_init_data template is rendered with.
+  cloud_init_data_vars = {
+    vmss_name = "cvu"
+  }
+
+system_assigned_managed_identity: A boolean value to give cClear-V a system-assigned managed identity with Reader on its resource group. Managed device registration needs it to discover instances through the Azure API.
+  system_assigned_managed_identity = true
 
 ```

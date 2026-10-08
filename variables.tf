@@ -167,9 +167,22 @@ variable "cclear_public_ip" {
 }
 
 variable "cclear_cloud_init_data" {
-  description = "cClear cloud-init data"
+  description = "Path to the cClear cloud-init template. Defaults to cloud-init/cclear.tpl in this module."
   type        = string
   default     = null
+}
+
+variable "cclear_license" {
+  description = "cClear license, written to /etc/cclear/cirrus/cclear.lic at boot. Empty deploys cClear unlicensed."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "cclear_managed_registration" {
+  description = "Register the cVu-V scale set with cClear. Gives cClear a managed identity with Reader on the resource group, so the deploying identity must be able to create role assignments."
+  type        = bool
+  default     = true
 }
 
 variable "cclear_image_id" {

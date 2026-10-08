@@ -103,9 +103,21 @@ variable "resource_names" {
 }
 
 variable "cloud_init_data" {
-  description = "The file path containing the cloud-init data to be used for the VM."
+  description = "The file path of a cloud-init template for the VM, rendered with cloud_init_data_vars."
   type        = string
   default     = null
+}
+
+variable "cloud_init_data_vars" {
+  description = "Variables used to render the cloud_init_data template."
+  type        = map(string)
+  default     = {}
+}
+
+variable "system_assigned_managed_identity" {
+  description = "Give cClear a system-assigned managed identity with Reader on its resource group, for managed device registration."
+  type        = bool
+  default     = false
 }
 
 variable "security_group_id" {

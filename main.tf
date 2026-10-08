@@ -74,10 +74,20 @@ module "cclear" {
   ssh_public_key           = var.ssh_public_key_file
   public_ip                = var.cclear_public_ip
   size                     = "Standard_D4s_v5"
-  data_size                = 500                        # Specifies the size of the data disk in GB.
-  cloud_init_data          = var.cclear_cloud_init_data # The cloud-init data to be used for the cClear-V instance.
-  security_group_id        = module.security_groups.cclear
-  tags                     = var.tags
+  data_size                = 500 # Specifies the size of the data disk in GB.
+  # The cloud-init template for the cClear-V instance, and the values it is rendered with.
+  cloud_init_data = coalesce(var.cclear_cloud_init_data, "${path.module}/cloud-init/cclear.tpl")
+  cloud_init_data_vars = {
+    cclear_license       = var.cclear_license
+    vmss_name            = local.cvu_vmss_name
+    resource_group       = azurerm_resource_group.capture.name
+    subscription_id      = var.subscription_id
+    auto_licensing       = var.auto_licensing
+    managed_registration = var.cclear_managed_registration
+  }
+  system_assigned_managed_identity = var.cclear_managed_registration
+  security_group_id                = var.cclear_security_group_id
+  tags                             = var.tags
   # why do we need to specify this when there's an implicit reference to the resource group above?
   depends_on = [azurerm_resource_group.capture]
 }
