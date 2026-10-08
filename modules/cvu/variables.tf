@@ -69,3 +69,8 @@ variable "cvu_scaling" {
   })
 }
 
+variable "vmss_name" {
+  description = "cVu-V scale set name"
+  type        = string
+  default     = "cvu"
+}

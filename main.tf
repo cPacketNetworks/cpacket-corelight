@@ -1,3 +1,8 @@
+locals {
+  # Shared by the cvu module and the cClear cloud-init. Not read from module.cvu, which depends on module.cclear.
+  cvu_vmss_name = "cvu"
+}
+
 resource "azurerm_resource_group" "capture" {
   name     = var.resource_group.name
   location = var.resource_group.location
@@ -29,6 +34,7 @@ module "cvu" {
   capture_subnet_id     = module.network.capture_subnet.id
   gwlb_subnet_id        = module.network.gwlb_subnet.id
 
+  vmss_name       = local.cvu_vmss_name
   cvu_image_id    = var.cvu_image_id
   cvu_scaleset    = var.cvu_scaleset
   cvu_scaling     = var.cvu_scaling

@@ -51,7 +51,7 @@ resource "azurerm_lb_rule" "capture_inbound" {
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "cvu" {
-  name                 = "cvu"
+  name                 = var.vmss_name
   location             = var.resource_group.location
   resource_group_name  = var.resource_group.name
   sku                  = var.cvu_scaleset.sku
