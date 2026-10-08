@@ -16,14 +16,6 @@ module "network" {
   vnet = var.vnet
 }
 
-module "security_groups" {
-  source = "./modules/security_groups"
-  resource_group = {
-    name     = azurerm_resource_group.capture.name
-    location = azurerm_resource_group.capture.location
-  }
-}
-
 module "cvu" {
   source = "./modules/cvu"
 
@@ -33,7 +25,7 @@ module "cvu" {
   }
 
   public_key            = file(var.ssh_public_key_file)
-  nva_security_group_id = module.security_groups.cvu
+  nva_security_group_id = var.cvu_security_group_id
   capture_subnet_id     = module.network.capture_subnet.id
   gwlb_subnet_id        = module.network.gwlb_subnet.id
 

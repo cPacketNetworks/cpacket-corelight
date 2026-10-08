@@ -150,6 +150,16 @@ variable "ssh_public_key_file" {
   default     = "~/.ssh/id_rsa.pub"
 }
 
+variable "cvu_security_group_id" {
+  description = "ID of an existing network security group to attach to the cVu-V scale set's NIC"
+  type        = string
+}
+
+variable "cclear_security_group_id" {
+  description = "ID of an existing network security group to attach to the cClear-V NIC"
+  type        = string
+}
+
 variable "cclear_public_ip" {
   description = "cClear public IP address"
   type        = bool

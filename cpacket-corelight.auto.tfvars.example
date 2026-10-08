@@ -11,6 +11,10 @@
 # 
 # corelight_image_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/corelight-22.3.421"
 # 
+# cvu_security_group_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/network-security/providers/Microsoft.Network/networkSecurityGroups/cvu"
+# 
+# cclear_security_group_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/network-security/providers/Microsoft.Network/networkSecurityGroups/cclear"
+# 
 # corelight_license_key_path = "corelight-license.txt"
 # 
 # tags = {
