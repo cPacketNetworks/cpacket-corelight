@@ -45,8 +45,6 @@ cp cpacket-corelight.auto.tfvars.example cpacket-corelight.auto.tfvars
 
 ### Initialize the Terraform configuration
 
-The version of the Azure provider is pinned to `2.46.0` to avoid any breaking changes.
-
 ```bash
 terraform init
 ```
