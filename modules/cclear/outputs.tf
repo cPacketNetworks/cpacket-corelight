@@ -1,11 +1,11 @@
 output "name" {
   description = "Virtual machine names created."
-  value       = azurerm_virtual_machine.cclear.name
+  value       = azurerm_linux_virtual_machine.cclear.name
 }
 
 output "id" {
   description = "Virtual machine names created."
-  value       = azurerm_virtual_machine.cclear.id
+  value       = azurerm_linux_virtual_machine.cclear.id
 }
 
 output "private_ip" {
@@ -15,5 +15,10 @@ output "private_ip" {
 
 output "public_ip" {
   description = "The public ip address allocated for the resource."
-  value       = var.public_ip ? azurerm_public_ip.cclear[0].ip_address : null
+  value       = var.public_ip ? data.azurerm_public_ip.cclear[0].ip_address : null
+}
+
+output "image_id" {
+  description = "The custom image ID used, or null if using marketplace image"
+  value       = var.image_id
 }

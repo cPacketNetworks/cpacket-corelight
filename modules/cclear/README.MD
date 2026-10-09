@@ -16,20 +16,19 @@ module "cclear" {
   vnet_resource_group_name = "<Resource group vnet name that cClear-V will be attached to (Can be the same as the resource_group_name)>"
   vnet_name                = "<VNET cCclear-V will be deployed>"
   subnet                   = "<Subnet to assign to cClear-V>"
-  image_id                 = "<Specifies the ID of the image to use to create cClear-V>"
   ssh_public_key           = "<Public ssh key to be used for accessing cClear-V>"
   public_ip                = "<A boolean to assign a public IP to cClear-V>"
 
   # Optional Variables with default values.  Default values are shown.
+  image_id                        = null                                      # ID of the cClear-V image. When null, the Azure Marketplace image is used.
   tags                            = {}                                        # The tags to associate with your resources.
   ipv4_address                    = null                                      # The private IP to assign to cClear-V.
-  size                            = "Standard_D4s_v5"                         # VM instance size.
+  size                            = "Standard_D8s_v5"                         # VM instance size.
   storage_type_os                 = "Standard_LRS"                            # Specifies the type of storage account type to be created for OS.
   storage_type_data               = "Premium_LRS"                             # Specifies the type of storage account type to be created for data disks. Valid options are Premium_LRS.
   data_size                       = 500                                       # Specifies the size of the data disk in GB.
   admin_username                  = "ubuntu"                                  # The admin username of the cClear-V that will be deployed.
   zones                           = true                                      # Place the cClear-V instance in an Availability Zone.
-  required_env_vars               = ["CCLEARV_USERNAME", "CCLEARV_PASSWORD"]  # Username and password environment variables to supply for the HTTP basic authentication.
   resource_names                  = {                                         # The names of the resources to be created.
     machine        = "cclear"
     management_nic = "cclear-management"
@@ -59,9 +58,6 @@ vnet_name: This should be set to the virtual network name of vnet_resource_group
 subnet: This is the subnet within the virtual network cClear-V will use.
   subnet = "management"
 
-image_id: This is ID of the image to use for creating the cClear-V.
-  image_id = "/subscriptions/93004638-8c6b-4e33-ba58-946afd57efdf/resourceGroups/cloud-builds/providers/Microsoft.Compute/galleries/dev_builds/images/cclear-v/versions/24.1.603"
-
 ssh_public_key: This is the public SSH key to be added to cClear-V for access.
   ssh_public_key = "~/.ssh/id_rsa.pub"
 
@@ -69,6 +65,9 @@ public_ip: A boolean value indicating whether to assign a public IP to cClear-V.
   public_ip = false
 
 # Optional Variables
+
+image_id: This is ID of the image to use for creating the cClear-V. When it is null, the Azure Marketplace image is used.
+  image_id = "/subscriptions/52ba377e-6215-48d9-beee-b3553fd81150/resourceGroups/CLOUD-BUILDS/providers/Microsoft.Compute/galleries/releases/images/cclear-v-mp/versions/25.2.4405"
 
 tags: This is a map with key and value tags to assign to resources.
   tags = {
@@ -79,7 +78,7 @@ ipv4_address: This is an IP address to assign to cClear-V.
   ipv4_address = "10.0.254.10"
 
 size: This is the instance size of cClear-V.
-  size = "Standard_D4s_v5"
+  size = "Standard_D8s_v5"
 
 storage_type_os: This is the type of storage account for the OS disk.
   storage_type_os = "Standard_LRS"
@@ -95,9 +94,6 @@ admin_username: This is the admin username for cClear-V.
 
 zones: This is a boolean value to indicate if cClear-V will be placed in an Availability Zone.
   zones = true
-
-required_env_vars: This is a list of environment variables (CCLEARV_USERNAME and CCLEARV_PASSWORD) required for HTTP basic authentication.
-  required_env_vars = ["CCLEARV_USERNAME", "CCLEARV_PASSWORD"]
 
 resource_names: This is a map of resource names to be used for the resources to be created, including machine, management_nic, data_disk, and os_disk.
   resource_names= {
