@@ -60,7 +60,7 @@ resource "azurerm_subnet_network_security_group_association" "management" {
 }
 
 module "cvu" {
-  source = "./modules/cvu"
+  source = "github.com/cPacketNetworks/cpacket-corelight//modules/cvu?ref=0.3.0"
 
   resource_group = azurerm_resource_group.capture.name
   location       = azurerm_resource_group.capture.location
@@ -132,7 +132,7 @@ moved {
 # Ubuntu VMs stand in for the Corelight sensors when there is no valid Corelight license.
 module "ubuntu" {
   count  = var.ubuntu ? 1 : 0
-  source = "./modules/ubuntu"
+  source = "github.com/cPacketNetworks/cpacket-corelight//modules/ubuntu?ref=0.3.0"
 
   resource_group_name  = azurerm_resource_group.capture.name
   location             = azurerm_resource_group.capture.location
@@ -150,7 +150,7 @@ resource "azurerm_ssh_public_key" "cpacket" {
 }
 
 module "cclear" {
-  source = "./modules/cclear"
+  source = "github.com/cPacketNetworks/cpacket-corelight//modules/cclear?ref=0.3.0"
 
   resource_group_name      = azurerm_resource_group.capture.name
   resource_group_id        = azurerm_resource_group.capture.id
