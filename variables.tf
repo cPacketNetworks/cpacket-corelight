@@ -3,15 +3,10 @@ variable "subscription_id" {
   type        = string
 }
 
-variable "tenant_id" {
-  description = "Azure tenant ID"
-  type        = string
-}
-
 variable "tags" {
   description = "Map of default tags to apply to cPacket resources"
   type        = map(string)
-  default     = null
+  default     = {}
 }
 
 variable "resource_group" {
@@ -58,36 +53,24 @@ variable "management_subnet" {
   }
 }
 
-variable "gwlb" {
-  description = "Map of gateway load balancer properties"
-  type = object({
-    private_ip_address  = string
-    protocol            = string
-    frontend_port       = string
-    backend_port        = string
-    probe_port          = number
-    probe_threshold     = number
-    interval_in_seconds = number
-    number_of_probes    = number
-  })
-  default = {
-    private_ip_address  = "10.0.253.5"
-    protocol            = "All"
-    frontend_port       = "0"
-    backend_port        = "0"
-    probe_port          = 80
-    probe_threshold     = 1
-    interval_in_seconds = 15
-    number_of_probes    = 2
-  }
+variable "zones" {
+  description = "Place cVu-V instances across Availability Zones 1-3 and cClear-V in zone 1. Set to false in regions without Availability Zones."
+  type        = bool
+  default     = true
 }
 
-# Image IDs are specified in free standing variables seperately from the VM configuration objects because
-# there are no meaningful defaults for them, and Terraform object defaults cannot be omitted if _any_ of the defaults are specified.
+# Without an image ID, cVu-V and cClear-V use cPacket's Azure Marketplace (BYOL) images at the given version.
 
 variable "cvu_image_id" {
-  description = "cVu-V image ID"
+  description = "cVu-V image ID. When null, the Azure Marketplace image at cvu_mp_version is used."
   type        = string
+  default     = null
+}
+
+variable "cvu_mp_version" {
+  description = "cVu-V Azure Marketplace image version, used when cvu_image_id is null"
+  type        = string
+  default     = "latest"
 }
 
 variable "vnet" {
@@ -116,7 +99,7 @@ variable "cvu_scaleset" {
 }
 
 variable "cvu_scaling" {
-  description = "cVu-V scaling properties"
+  description = "cVu-V instance counts. Equal values give a fixed size; when min_count and max_count differ, the scale set autoscales on its total outbound network traffic."
   type = object({
     default_count = number
     min_count     = number
@@ -124,30 +107,64 @@ variable "cvu_scaling" {
   })
   default = {
     default_count = 3
-    min_count     = 1
-    max_count     = 5
+    min_count     = 3
+    max_count     = 3
   }
 }
 
+variable "ubuntu" {
+  description = "Deploy Ubuntu VMs in place of the Corelight sensors, for when there is no valid Corelight license. They receive cVu-V's mirrored VXLAN traffic and do nothing else with it. The other corelight_* variables are then not needed."
+  type        = bool
+  default     = false
+}
+
 variable "corelight_image_id" {
-  description = "Corelight image ID"
+  description = "Corelight image ID. Required unless ubuntu is true."
   type        = string
+  default     = null
+
+  validation {
+    condition     = var.ubuntu || var.corelight_image_id != null
+    error_message = "corelight_image_id is required unless ubuntu is true."
+  }
 }
 
 variable "corelight_license_key_path" {
-  description = "Corelight license key file path"
+  description = "Corelight license key file path. Required unless ubuntu is true."
   type        = string
+  default     = null
+
+  validation {
+    condition     = var.ubuntu || var.corelight_license_key_path != null
+    error_message = "corelight_license_key_path is required unless ubuntu is true."
+  }
 }
 
 variable "corelight_sensor_community_string" {
-  description = "Corelight sensor password"
+  description = "Corelight sensor password. Required unless ubuntu is true."
   type        = string
+  default     = null
+
+  validation {
+    condition     = var.ubuntu || var.corelight_sensor_community_string != null
+    error_message = "corelight_sensor_community_string is required unless ubuntu is true."
+  }
 }
 
 variable "ssh_public_key_file" {
   description = "Path to the SSH public key file"
   type        = string
   default     = "~/.ssh/id_rsa.pub"
+}
+
+variable "capture_security_group_id" {
+  description = "ID of an existing network security group to attach to the capture subnet (cVu-V and the Corelight sensors' monitoring NICs)"
+  type        = string
+}
+
+variable "management_security_group_id" {
+  description = "ID of an existing network security group to attach to the management subnet (cClear-V and the Corelight sensors' management NICs)"
+  type        = string
 }
 
 variable "cclear_public_ip" {
@@ -157,14 +174,34 @@ variable "cclear_public_ip" {
 }
 
 variable "cclear_cloud_init_data" {
-  description = "cClear cloud-init data"
+  description = "Path to the cClear cloud-init template. Defaults to cloud-init/cclear.tpl in this module."
   type        = string
   default     = null
 }
 
-variable "cclear_image_id" {
-  description = "cClear image ID"
+variable "cclear_license" {
+  description = "cClear license, written to /etc/cclear/cirrus/cclear.lic at boot. Empty deploys cClear unlicensed."
   type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "cclear_managed_registration" {
+  description = "Register the cVu-V scale set with cClear. Gives cClear a managed identity with Reader on the resource group, so the deploying identity must be able to create role assignments."
+  type        = bool
+  default     = true
+}
+
+variable "cclear_image_id" {
+  description = "cClear-V image ID. When null, the Azure Marketplace image at cclear_mp_version is used."
+  type        = string
+  default     = null
+}
+
+variable "cclear_mp_version" {
+  description = "cClear-V Azure Marketplace image version, used when cclear_image_id is null"
+  type        = string
+  default     = "latest"
 }
 
 variable "auto_licensing" {

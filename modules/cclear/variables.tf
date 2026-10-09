@@ -1,3 +1,5 @@
+# # Required variables
+
 variable "resource_group_name" {
   description = "resource group name where cClear will be deployed"
   type        = string
@@ -13,16 +15,13 @@ variable "vnet_resource_group_name" {
 variable "vnet_name" {
   description = "Name of the vnet to use"
   type        = string
+  nullable    = false
 }
 
 variable "subnet" {
   description = "subnet to assign to cClear"
   type        = string
-}
-
-variable "image_id" {
-  description = "Specifies the ID of the image to use to create the Virtual Machine. /subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Compute/images/<cclear_image_id>"
-  type        = string
+  nullable    = false
 }
 
 variable "ssh_public_key" {
@@ -33,6 +32,21 @@ variable "ssh_public_key" {
 variable "public_ip" {
   description = "A booleon to assign a public IP to cClear."
   type        = bool
+}
+
+variable "image_id" {
+  description = "Specifies the ID of the image to use to create the Virtual Machine. /subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Compute/images/<cclear_image_id>"
+  type        = string
+  default     = null
+}
+
+
+# # Optional variables
+
+variable "mp_version" {
+  description = "Specifies the ID of the image to use to create the Virtual Machine. /subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Compute/images/<cclear_image_id>"
+  type        = string
+  default     = "latest"
 }
 
 variable "tags" {
@@ -50,7 +64,7 @@ variable "ipv4_address" {
 variable "size" {
   description = "Specifies the size of the virtual machine."
   type        = string
-  default     = "Standard_D4s_v5"
+  default     = "Standard_D8s_v5"
 }
 
 variable "storage_type_os" {
@@ -77,6 +91,11 @@ variable "data_size" {
   description = "Specifies the size of the data disk in GB."
   type        = number
   default     = 500
+
+  validation {
+    condition     = var.data_size >= 32
+    error_message = "Data disk size must be at least 32 GB."
+  }
 }
 
 variable "admin_username" {
@@ -108,7 +127,44 @@ variable "cloud_init_data" {
   default     = null
 }
 
-variable "security_group_id" {
-  description = "The security group to attach to the cClear."
+variable "cloud_init_data_vars" {
+  description = "The cloud-init data to be used for the cClear."
+  type        = map(string)
+  default     = {}
+}
+
+variable "system_assigned_managed_identity" {
+  description = "Enable system managed identity for cClear."
+  type        = bool
+  default     = true
+}
+
+variable "user_assigned_identity_ids" {
+  description = "List of user-assigned managed identity IDs to assign to cClear. Used for passwordless PostgreSQL access via Azure AD."
+  type        = list(string)
+  default     = []
+}
+
+variable "location" {
+  description = "Azure region. When provided, avoids a data-source lookup on the resource group."
   type        = string
+  default     = null
+}
+
+variable "subnet_id" {
+  description = "Subnet ID for the cClear NIC. When provided, avoids a subnet data-source lookup."
+  type        = string
+  default     = null
+}
+
+variable "lookup_subnets" {
+  description = "Whether to look up subnets via data sources when subnet IDs are not provided. Set to false when callers always pass subnet IDs computed from other resources (which would otherwise make the data-source `count` unknown at plan time)."
+  type        = bool
+  default     = true
+}
+
+variable "resource_group_id" {
+  description = "Resource group ID (used for role assignments). When provided, avoids a data-source lookup."
+  type        = string
+  default     = null
 }

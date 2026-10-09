@@ -1,15 +1,26 @@
 # # See variable descriptions in variables.tf for more information
 # # The values here are the defaults specified in variables.tf, or sensible examples.
 
-# tenant_id = "72f988bf-86f1-41af-91ab-2d7cd011db47"
-# 
 # subscription_id = "7fbc3a8b-268b-4fb9-b1c5-9c84433b378f"
 # 
-# cvu_image_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/cvu-v-22.3.421"
+# # cVu-V and cClear-V use cPacket's Azure Marketplace images unless an image ID is given.
+# cvu_mp_version = "latest"
 # 
-# cclear_image_id = "/subscriptions/93004638-8c6b-4e33-ba58-946afd57efdf/resourceGroups/cloud-builds/providers/Microsoft.Compute/galleries/dev_builds/images/cclear-v/versions/24.2.680"
+# cclear_mp_version = "latest"
 # 
-# corelight_image_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/corelight-22.3.421"
+# # cvu_image_id = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Compute/galleries/<gallery>/images/cvu-v-mp/versions/<version>"
+# 
+# # cclear_image_id = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Compute/galleries/<gallery>/images/cclear-v-mp/versions/<version>"
+# 
+# # Ubuntu VMs stand in for the Corelight sensors when there is no valid Corelight license;
+# # the other corelight_* values are then not needed.
+# ubuntu = false
+#
+# corelight_image_id ="/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/cicd-images/providers/Microsoft.Compute/images/corelight-22.3.421"
+# 
+# capture_security_group_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/network-security/providers/Microsoft.Network/networkSecurityGroups/capture"
+# 
+# management_security_group_id = "/subscriptions/7fbc3a8b-268b-4fb9-b1c5-9c84433b378f/resourceGroups/network-security/providers/Microsoft.Network/networkSecurityGroups/management"
 # 
 # corelight_license_key_path = "corelight-license.txt"
 # 
@@ -23,10 +34,12 @@
 # }
 # 
 # cvu_scaling = {
-#   min_count     = 2
-#   max_count     = 5
-#   default_count = 2
+#   min_count     = 3
+#   max_count     = 3
+#   default_count = 3
 # }
+# 
+# zones = true
 # 
 # corelight_sensor_community_string = "/"
 # 
@@ -46,17 +59,6 @@
 #   name = "gwlb"
 #   cidr = "10.0.251.0/24"
 # }
-#
-# gwlb = {
-#   private_ip_address  = "10.0.253.5"
-#   protocol            = "All"
-#   frontend_port       = "0"
-#   backend_port        = "0"
-#   probe_port          = 80
-#   probe_threshold     = 1
-#   interval_in_seconds = 15
-#   number_of_probes    = 2
-# }
 # 
 # vnet = {
 #   cidr = "10.0.0.0/16"
@@ -73,3 +75,7 @@
 # cclear_cloud_init_data = "./cloud-init/cclear.tpl"
 # 
 # auto_licensing = false
+# 
+# cclear_license = "<cClear license>"
+# 
+# cclear_managed_registration = true

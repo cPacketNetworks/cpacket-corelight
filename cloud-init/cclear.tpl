@@ -5,7 +5,8 @@ write_files:
   permissions: '0644'
   content: |
     ${cclear_license}
-- path: /etc/cclear/cirrus/db.json
+%{ if managed_registration }
+- path: /run/cirrus/db.json
   permissions: '0644'
   content: |
     {
@@ -21,6 +22,7 @@ write_files:
         }
       }
     }
+%{ endif }
 runcmd:
 %{ if auto_licensing }
   - systemctl enable --now auto-licensing.service
