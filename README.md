@@ -34,7 +34,7 @@ The PNG also embeds it, so either file can be opened and edited in [draw.io](htt
 Clone the repository and navigate to the `cpacket-corelight` directory.
 
 ```bash
-git clone git@github.com:/terraform-azure.git
+git clone https://github.com/cPacketNetworks/cpacket-corelight.git
 cd cpacket-corelight
 ```
 
@@ -149,15 +149,18 @@ Pin a release tag with `?ref=`:
 
 ```hcl
 module "cvu" {
-  source = "github.com/cPacketNetworks/cpacket-corelight//modules/cvu?ref=v1.0.0"
+  source = "github.com/cPacketNetworks/cpacket-corelight//modules/cvu?ref=0.3.0"
   # ...
 }
 
 module "cclear" {
-  source = "github.com/cPacketNetworks/cpacket-corelight//modules/cclear?ref=v1.0.0"
+  source = "github.com/cPacketNetworks/cpacket-corelight//modules/cclear?ref=0.3.0"
   # ...
 }
 ```
+
+This repository's `main.tf` loads all three of its modules, `cvu`, `cclear` and `ubuntu`, the same way.
+So a change under `modules/` reaches `main.tf` only after it is tagged and the `?ref=` in `main.tf` is bumped to that tag.
 
 Each module's `README.MD` lists its inputs, and this repository's `main.tf` is a complete example.
 The modules render cloud-init templates that the caller provides; `cloud-init/cvu.tpl` and `cloud-init/cclear.tpl` work with them.
